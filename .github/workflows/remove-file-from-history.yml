@@ -1,0 +1,41 @@
+name: Remove File from Git History
+
+on:
+  workflow_dispatch:
+
+jobs:
+  remove-file:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history
+
+      - name: Install git-filter-repo
+        run: |
+          pip install git-filter-repo
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Remove file from history
+        run: |
+          git filter-repo --path public/about/nftnyc/clip-3.mov --invert-paths
+
+      - name: Force push changes
+        run: |
+          git push --force --all
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Force push tags
+        run: |
+          git push --force --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
